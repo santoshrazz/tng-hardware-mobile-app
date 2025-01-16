@@ -12,6 +12,9 @@ const corsOptions = {
     credentials: true, // Allow cookies or credentials
 };
 app.use(cors(corsOptions))
+app.get("/", (req, res) => {
+    res.send("Hello From Santosh's Api")
+})
 app.use("/api/v1/user", userRouter)
 app.use(errorHandler);
 
