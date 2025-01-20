@@ -7,7 +7,6 @@ export const handleCreateUser = async (request, response, next) => {
         if (!name || !password || !email) {
             return response.status(400).json({ message: "No required information available", success: false })
         }
-
         const isUserExists = await userModel.findOne({ email })
         if (isUserExists) {
             next(new ApiError("User already exists try logging into your account", 400))
@@ -32,6 +31,7 @@ export const handleCreateUser = async (request, response, next) => {
         const newUser = await userModel.findById(createdUser._id).select("-password -isVerified -userVerificationOtp -noOfCouponRedeem -userVerificationOtpExpiry -role");
         response.status(201).json({ message: "User created", user: newUser })
     } catch (error) {
+        console.log(error);
         next(new ApiError("Error creating user", 400))
     }
 }
@@ -56,7 +56,6 @@ export const verifyUser = async (request, response, next) => {
             return response.status(400).json({ message: "User is already verified", success: false });
         }
 
-        // Check if the provided OTP matches the stored OTP
         if (Number(user.userVerificationOtp) !== parseInt(otp, 10)) {
             return next(new ApiError("Invalid OTP", 400));
         }

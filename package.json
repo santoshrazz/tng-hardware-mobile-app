@@ -20,7 +20,8 @@
     "express": "^4.21.2",
     "mailgen": "^2.0.29",
     "mongoose": "^8.9.5",
-    "nodemailer": "^6.9.16"
+    "nodemailer": "^6.9.16",
+    "uniqid": "^5.4.0"
   },
   "devDependencies": {
     "cookie-parser": "^1.4.7",
