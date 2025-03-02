@@ -3,7 +3,7 @@ import { handleCreateCoupon, handleRedeemCoupon } from '../controller/coupon.con
 import { isAdmin, verifyUserToken } from '../middleware/userVerify.middleware.js';
 const couponRouter = express.Router()
 
-couponRouter.post("/create-coupon", handleCreateCoupon);
-couponRouter.post("/redeem-coupon", verifyUserToken, isAdmin, handleRedeemCoupon)
+couponRouter.post("/create-coupon", verifyUserToken, isAdmin, handleCreateCoupon);
+couponRouter.post("/redeem-coupon", verifyUserToken, handleRedeemCoupon)
 
 export default couponRouter
