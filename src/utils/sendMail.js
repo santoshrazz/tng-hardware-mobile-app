@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 import Mailgen from 'mailgen';
-async function sendMail(userEmail, messageParams) {
+async function sendMail(userEmail, messageParams,) {
     try {
         let config = {
             service: "gmail",
@@ -26,9 +26,9 @@ async function sendMail(userEmail, messageParams) {
         var email = {
             body: {
                 name: messageParams.name,
-                intro: 'Welcome to Murga Shop We\'re very excited to have you on board.',
+                intro: 'Welcome to Techify Shop We\'re very excited to have you on board.',
                 action: {
-                    instructions: 'To get started with Murga Shop, Please enter the OTP on the website:',
+                    instructions: messageParams?.message || 'To get started with Techify Shop, Please enter the OTP on the website:',
                     button: {
                         color: '#2cc777', // Optional action button color
                         text: messageParams.OTP,

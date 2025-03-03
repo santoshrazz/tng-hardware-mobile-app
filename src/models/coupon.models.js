@@ -13,6 +13,10 @@ const couponSchema = mongoose.Schema({
     couponAmount: {
         type: Number,
         required: [true, "Amount is required to create coupon"]
+    },
+    usedByUser: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user"
     }
 }, { timestamps: true })
 

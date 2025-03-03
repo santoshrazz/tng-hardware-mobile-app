@@ -233,6 +233,135 @@ This endpoint is used to authenticate an existing user and provide an access tok
 }
 ```
 
+# Get User Profile Detail API
+
+## Overview
+
+The `getUserProfileDetail` function is a controller that retrieves the profile details of a logged-in user based on their user ID. It ensures authentication and returns the necessary user information while excluding sensitive fields.
+
+## Endpoint
+
+**Method:** GET  
+**URL:** `/api/user/profile`
+
+## Request Headers
+
+- **Authorization:** Bearer `<JWT_TOKEN>` (Required)
+
+## Response
+
+### Success Response (200 OK)
+
+```json
+{
+  "success": true,
+  "message": "Getting user details successfully",
+  "user": {
+    "_id": "1234567890abcdef",
+    "name": "John Doe",
+    "email": "johndoe@example.com",
+    "createdAt": "2024-01-01T12:00:00.000Z"
+  }
+}
+```
+
+### Error Responses
+
+- **401 Unauthorized**
+
+```json
+{
+  "success": false,
+  "message": "No user id found"
+}
+```
+
+- **500 Internal Server Error**
+
+```json
+{
+  "success": false,
+  "message": "Error getting user profile detail"
+}
+```
+
+#### Error Responses
+
+- **401 Unauthorized**
+
+```json
+{
+  "success": false,
+  "message": "No user id found"
+}
+```
+
+- **500 Internal Server Error**
+
+## Handle Forget Password API
+
+### Overview
+
+The `handleForgetPassword` function is a controller that manages the password reset process. It generates a one-time password (OTP), sends it via email, and updates the user's password in the database.
+
+### Endpoint
+
+**Method:** POST\
+**URL:** `/api/user/forget-password`
+
+### Request Headers
+
+- **Authorization:** Bearer `<JWT_TOKEN>` (Required)
+
+### Response
+
+#### Success Response (200 OK)
+
+```json
+{
+  "success": true,
+  "message": "OTP sent successfully to the registered email."
+}
+```
+
+#### Error Responses
+
+- **400 Bad Request** (If user is not found)
+
+```json
+{
+  "success": false,
+  "message": "No user found in db"
+}
+```
+
+- **400 Bad Request** (If email sending fails)
+
+```json
+{
+  "success": false,
+  "message": "Failed to send gmail"
+}
+```
+
+- **500 Internal Server Error**
+
+```json
+{
+  "success": false,
+  "message": "Error in handler forget password"
+}
+```
+
+### Notes
+
+- The system generates a 6-digit OTP for password reset.
+- The OTP is temporarily stored as the new password until the user sets a permanent one.
+- The function relies on `sendMail` utility for email delivery.
+
+
+
+
 # Coupon System API Documentation
 
 ## Routes Overview

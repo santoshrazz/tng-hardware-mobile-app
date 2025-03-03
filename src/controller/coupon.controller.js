@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 export const handleCreateCoupon = async (req, res, next) => {
     try {
         const { amount, couponNo } = req.body;
+        console.log("amount", amount);
 
         // Validate input
         if (!amount || !couponNo || couponNo <= 0) {
@@ -30,9 +31,10 @@ export const handleCreateCoupon = async (req, res, next) => {
             }
             coupons.push({
                 couponCode: newCouponCode, // Match schema field name
-                couponAmount: amount,      // Match schema field name
+                couponAmount: amount
             });
         }
+        console.log(coupons);
         // Insert all coupons into the database
         await couponModel.insertMany(coupons);
 
@@ -47,14 +49,10 @@ export const handleCreateCoupon = async (req, res, next) => {
 
 export const handleRedeemCoupon = async (req, res, next) => {
     const { couponCode } = req.body;
-    console.log(couponCode);
     if (!couponCode) {
         return next(new ApiError("Coupon code required", 400))
     }
-    const userId = req.user;
-    if (!userId) {
-        return next(new ApiError("unauthorized", 400))
-    }
+    const userId = req.user.id;
     const session = await mongoose.startSession()
     session.startTransaction()
     try {
@@ -65,13 +63,14 @@ export const handleRedeemCoupon = async (req, res, next) => {
         if (isCouponExists.isUsed) {
             return next(new ApiError("Coupon Already Used Try purchasing a new product", 400))
         }
-        const user = await userModel.findById(userId.id);
+        const user = await userModel.findById(userId);
         if (!user) {
             return next(new ApiError("No user found", 400))
         }
         user.totalWalletAmount = (user.totalWalletAmount || 0) + isCouponExists.couponAmount;
         user.noOfCouponRedeem = (user.noOfCouponRedeem || 0) + 1;
         isCouponExists.isUsed = true;
+        isCouponExists.usedByUser = userId;
         await user.save({ session })
         await isCouponExists.save({ session })
 
@@ -88,4 +87,11 @@ export const handleRedeemCoupon = async (req, res, next) => {
         return next(new ApiError("Error redeem coupon", 400))
     }
 
+}
+export const getAllRedeemdCouponList = async (req, res, next) => {
+    try {
+
+    } catch (error) {
+
+    }
 }

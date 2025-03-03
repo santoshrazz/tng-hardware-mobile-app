@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose, { Mongoose } from 'mongoose'
 import bcryptjs from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 const userSchema = mongoose.Schema({
@@ -44,7 +44,7 @@ const userSchema = mongoose.Schema({
     userVerificationOtpExpiry: {
         type: Date,
         default: () => Date.now() + 30 * 60 * 1000
-    }
+    },
 },
     { timestamps: true }
 )
