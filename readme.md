@@ -359,9 +359,6 @@ The `handleForgetPassword` function is a controller that manages the password re
 - The OTP is temporarily stored as the new password until the user sets a permanent one.
 - The function relies on `sendMail` utility for email delivery.
 
-
-
-
 # Coupon System API Documentation
 
 ## Routes Overview
@@ -508,17 +505,6 @@ Allows users to redeem a coupon by providing a valid coupon code. The coupon's a
 
 This controller processes coupon redemption by verifying the coupon and user details, then updating the database atomically.
 
-#### Steps:
-
-1. Validate input (`couponCode`) and user authentication (`req.user`).
-2. Start a MongoDB session and transaction to ensure atomic updates.
-3. Check if the coupon exists and is not already used.
-4. Fetch the authenticated user from the database.
-5. Add the coupon amount to the user's wallet and increment the number of redeemed coupons.
-6. Mark the coupon as used.
-7. Save all changes within the transaction.
-8. Return a success response.
-
 #### Example Request Body:
 
 ```json
@@ -542,3 +528,41 @@ This controller processes coupon redemption by verifying the coupon and user det
 ## Error Handling:
 
 All errors are handled using a custom `ApiError` class that sends appropriate status codes and messages. Errors are passed to the next middleware using `next(error)`.
+
+### 1. Get All Redeemed Coupons
+
+**Endpoint:** `/api/coupons/redeemd-coupons-list`  
+**Method:** `GET`  
+**Description:** Retrieves a list of all redeemed coupons along with the user details (only `name` and `_id`).  
+**Response:**
+
+- `200 OK`: Returns the list of redeemed coupons.
+- `500 Internal Server Error`: If an error occurs while fetching data.
+
+### 2. Get Redeemed Coupons by User
+
+**Endpoint:** `/api/coupons/redeemd-coupons-list-user`  
+**Method:** `GET`  
+**Description:** Retrieves a list of redeemed coupons for the authenticated user.  
+**Authentication:** Required (User must be logged in).  
+**Response:**
+
+- `200 OK`: Returns the list of redeemed coupons for the user.
+- `500 Internal Server Error`: If an error occurs while fetching data.
+
+## Response Format
+
+```json
+{
+  "success": true,
+  "message": "coupons retrieved successfully",
+  "coupons": [
+    {
+      "_id": "couponId",
+      "code": "COUPON123",
+      "discount": 10,
+      "usedByUser": "userId"
+    }
+  ]
+}
+```

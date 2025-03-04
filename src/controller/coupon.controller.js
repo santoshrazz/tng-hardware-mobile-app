@@ -90,8 +90,25 @@ export const handleRedeemCoupon = async (req, res, next) => {
 }
 export const getAllRedeemdCouponList = async (req, res, next) => {
     try {
-
+        const coupons = await couponModel.find({ isUsed: true }).populate('usedByUser', 'name _id');
+        if (coupons.length <= 0) {
+            return res.status(200).json({ success: true, message: "No redeemed coupons yet", coupons });
+        }
+        return res.status(200).json({ success: true, message: "coupons retrieved successfully", coupons });
     } catch (error) {
+        return next(new ApiError("error fetching redeemed coupons", 500))
+    }
+}
 
+export const getRedeemedByUserCouponList = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const coupons = await couponModel.find({ usedByUser: userId });
+        if (coupons.length <= 0) {
+            return res.status(200).json({ success: true, message: "No redeemed coupons yet", coupons });
+        }
+        return res.status(200).json({ success: true, message: "coupons retrieved successfully", coupons });
+    } catch (error) {
+        return next(new ApiError("error fetching redeemed coupons", 500))
     }
 }
