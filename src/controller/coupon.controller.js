@@ -3,6 +3,8 @@ import { ApiError } from "../middleware/errorHandler.middleware.js"; // Assuming
 import { userModel } from "../models/user.models.js";
 import mongoose from "mongoose";
 import { generateCouponCode } from "../utils/index.js";
+
+// ===========>   User only Controller   <================
 export const handleCreateCoupon = async (req, res, next) => {
     try {
         const { amount, couponNo } = req.body;
@@ -98,6 +100,7 @@ export const getAllRedeemdCouponList = async (req, res, next) => {
     }
 }
 
+// =========> Admin only Controllers <=============
 export const getRedeemedByUserCouponList = async (req, res, next) => {
     try {
         const userId = req.user.id;
@@ -110,3 +113,48 @@ export const getRedeemedByUserCouponList = async (req, res, next) => {
         return next(new ApiError("error fetching redeemed coupons", 500))
     }
 }
+
+export const getUnUsedCouponList = async (req, res, next) => {
+    try {
+        const unUsedCoupon = await couponModel.find({ isUsed: false });
+        return res.status(200).json({ message: "", success: false, coupons: unUsedCoupon })
+    } catch (error) {
+        return next(new ApiError("Error getting coupons", 500))
+    }
+}
+export const deleteCouponById = async (req, res, next) => {
+    const couponId = req.params.couponId;
+    if (!couponId) {
+        return next(new ApiError("No coupon Id provided", 404))
+    }
+    try {
+        const deletedCoupon = await couponModel.deleteOne({ _id: couponId });
+        if (deletedCoupon?.deletedCount !== 1) {
+            return next(new ApiError("Error deleting coupon", 500))
+        }
+        return res.status(200).json({ message: "coupon Deleted", success: true })
+    } catch (error) {
+        return next(new ApiError("Error deleting coupon", 500))
+    }
+
+}
+export const deleteUsedCoupon = async (req, res, next) => {
+    const couponType = req.params.couponType;
+    if (!couponType) {
+        return next(new ApiError("Type required Used or Unused", 404))
+    }
+    const isUsedorUnused = couponType === "Used" ? true : false;
+    try {
+        const deletedCoupon = await couponModel.deleteMany({ isUsed: isUsedorUnused });
+        // if (deletedCoupon?.deletedCount !== 1) {
+        //     return next(new ApiError("Error deleting coupon", 500))
+        // }
+        return res.status(200).json({ message: "coupon Deleted", success: true })
+    } catch (error) {
+        console.log("error is", error);
+        return next(new ApiError("Error deleting coupon", 500))
+    }
+
+}
+//all user list
+//all those coupons which is not in used

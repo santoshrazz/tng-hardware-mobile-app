@@ -139,15 +139,13 @@ export const loginUser = async (request, response, next) => {
 
 export const getUserProfileDetail = async (request, response, next) => {
     try {
-        console.log(request.user);
         const userId = request?.user?.id;
         if (!userId) {
             return next(new ApiError("No user id found", 401))
         }
-        const user = await userModel.findById(userId).select("-role  -noOfCouponRedeem")
+        const user = await userModel.findById(userId).select("-noOfCouponRedeem")
         response.status(200).json({ success: true, message: "Getting user details successfully", user })
     } catch (error) {
-        console.log(error);
         return next(new ApiError("Error getting user profile detail"));
     }
 }
@@ -198,5 +196,13 @@ export const handleForgetPassword = async (request, response, next) => {
 
     } catch (error) {
         return next(new ApiError("Error in handler forget password", 500))
+    }
+}
+export const allUsersList = async (req, res, next) => {
+    try {
+        const allUserList = await userModel.find({ role: "User" });
+        return res.status(200).json({ success: true, users: allUserList, message: "User retrieved successfully" })
+    } catch (error) {
+        return next(new ApiError("error getting user lists"))
     }
 }
