@@ -15,16 +15,16 @@ export const handleCreateUser = async (request, response, next) => {
         const userOtp = Math.floor(100000 + Math.random() * 900000);
         // TODO ---> Send mail to user
         // const sendGmailRespons = true
-        const sendGmailRespons = await sendMail(email, { name, OTP: userOtp })
-        if (!sendGmailRespons) {
-            return next(new ApiError("Failed to send gmail", 400))
-        }
+        // const sendGmailRespons = await sendMail(email, { name, OTP: userOtp })
+        // if (!sendGmailRespons) {
+        //     return next(new ApiError("Failed to send gmail", 400))
+        // }
         const createdUser = await userModel.create({
             name,
             email,
             phone,
             password,
-            userVerificationOtp: userOtp
+            // userVerificationOtp: userOtp
         })
         if (!createdUser) {
             return next(new ApiError("Unable to create user", 400))
@@ -93,7 +93,7 @@ export const loginUser = async (request, response, next) => {
         }
 
         // Find the user by email, including the password (since it's marked as `select: false` in the schema)
-        const user = await userModel.findOne({ email }).select("+password +isVerified");
+        const user = await userModel.findOne({ email }).select("+password +isVerified +role");
 
         // Check if the user exists
         if (!user) {
@@ -101,9 +101,9 @@ export const loginUser = async (request, response, next) => {
         }
 
         // Check if the user's email is verified
-        if (!user.isVerified) {
-            return next(new ApiError("Email is not verified. Please verify your account.", 401));
-        }
+        // if (!user.isVerified) {
+        //     return next(new ApiError("Email is not verified. Please verify your account.", 401));
+        // }
 
         // Compare the provided password with the hashed password stored in the database
         const isPasswordValid = await user.comparePassword(password);
@@ -120,6 +120,7 @@ export const loginUser = async (request, response, next) => {
             id: user._id,
             name: user.name,
             email: user.email,
+            role: user.role,
             totalWalletAmount: user.totalWalletAmount,
             noOfCouponRedeem: user.noOfCouponRedeem,
         };
@@ -132,7 +133,6 @@ export const loginUser = async (request, response, next) => {
             user: userResponse,
         });
     } catch (error) {
-        console.error("Error during user login:", error);
         next(new ApiError("An error occurred during login. Please try again.", 500));
     }
 };

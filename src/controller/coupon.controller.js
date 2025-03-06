@@ -1,13 +1,11 @@
 import { couponModel } from "../models/coupon.models.js";
-import uniqid from "uniqid";
 import { ApiError } from "../middleware/errorHandler.middleware.js"; // Assuming you have an ApiError utility
 import { userModel } from "../models/user.models.js";
 import mongoose from "mongoose";
-
+import { generateCouponCode } from "../utils/index.js";
 export const handleCreateCoupon = async (req, res, next) => {
     try {
         const { amount, couponNo } = req.body;
-        console.log("amount", amount);
 
         // Validate input
         if (!amount || !couponNo || couponNo <= 0) {
@@ -23,7 +21,7 @@ export const handleCreateCoupon = async (req, res, next) => {
 
             // Ensure unique coupon code
             while (!isUnique) {
-                newCouponCode = uniqid();
+                newCouponCode = generateCouponCode();
                 const isExists = await couponModel.findOne({ couponCode: newCouponCode });
                 if (!isExists) {
                     isUnique = true;
@@ -34,13 +32,13 @@ export const handleCreateCoupon = async (req, res, next) => {
                 couponAmount: amount
             });
         }
-        console.log(coupons);
         // Insert all coupons into the database
         await couponModel.insertMany(coupons);
 
+        const newCoupons = coupons.map(({ couponCode }) => ({ couponCode }));
         res.status(201).json({
             message: `${couponNo} coupons created successfully`,
-            coupons,
+            newCoupons,
         });
     } catch (error) {
         next(error); // Pass error to the error handler
