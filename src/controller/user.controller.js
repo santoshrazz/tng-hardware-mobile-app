@@ -30,7 +30,7 @@ export const handleCreateUser = async (request, response, next) => {
             return next(new ApiError("Unable to create user", 400))
         }
         const newUser = await userModel.findById(createdUser._id).select("-password -isVerified -userVerificationOtp -noOfCouponRedeem -userVerificationOtpExpiry -role");
-        response.status(201).json({ message: "User created", user: newUser })
+        response.status(201).json({ message: "User created", user: newUser, success: true })
     } catch (error) {
         console.log(error);
         next(new ApiError("Error creating user", 400))

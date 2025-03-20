@@ -5,7 +5,7 @@ dotenv.config({ path: "./.env" })
 
 connectToDb().then(() => {
     app.listen(process.env.PORT || 8080, () => {
-        // console.log('server listening at port', process.env.PORT);
+        console.log('server listening at port', process.env.PORT);
     })
 }).catch((error) => {
     // console.log("error starting the server");
