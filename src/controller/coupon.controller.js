@@ -80,6 +80,7 @@ export const handleRedeemCoupon = async (req, res, next) => {
         res.status(200).json({
             message: "Coupon redeemed successfully",
             success: true,
+            points: isCouponExists.couponAmount,
             walletAmount: user.totalWalletAmount,
             redeemedCoupons: user.noOfCouponRedeem,
         })
