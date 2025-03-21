@@ -39,6 +39,7 @@ export const handleCreateCoupon = async (req, res, next) => {
 
         const newCoupons = coupons.map(({ couponCode }) => ({ couponCode }));
         res.status(201).json({
+            success: true,
             message: `${couponNo} coupons created successfully`,
             newCoupons,
         });
@@ -78,6 +79,7 @@ export const handleRedeemCoupon = async (req, res, next) => {
         session.endSession();
         res.status(200).json({
             message: "Coupon redeemed successfully",
+            success: true,
             walletAmount: user.totalWalletAmount,
             redeemedCoupons: user.noOfCouponRedeem,
         })

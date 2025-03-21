@@ -202,6 +202,7 @@ export const handleForgetPassword = async (request, response, next) => {
         return next(new ApiError("Error in handler forget password", 500))
     }
 }
+
 export const allUsersList = async (req, res, next) => {
     try {
         const allUserList = await userModel.find({ role: "User" });
