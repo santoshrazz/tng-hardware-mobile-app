@@ -12,7 +12,7 @@ export const handleCreateUser = async (request, response, next) => {
         if (isUserExists) {
             next(new ApiError("User already exists try logging into your account", 400))
         }
-        const userOtp = Math.floor(100000 + Math.random() * 900000);
+        // const userOtp = Math.floor(100000 + Math.random() * 900000);
         // TODO ---> Send mail to user
         // const sendGmailRespons = true
         // const sendGmailRespons = await sendMail(email, { name, OTP: userOtp })
@@ -29,8 +29,12 @@ export const handleCreateUser = async (request, response, next) => {
         if (!createdUser) {
             return next(new ApiError("Unable to create user", 400))
         }
-        const newUser = await userModel.findById(createdUser._id).select("-password -isVerified -userVerificationOtp -noOfCouponRedeem -userVerificationOtpExpiry -role");
-        response.status(201).json({ message: "User created", user: newUser, success: true })
+
+        const newUser = await userModel.findById(createdUser._id).select("-password -isVerified -userVerificationOtp  -userVerificationOtpExpiry");
+        const token = await newUser.generateAuthToken();
+        newUser.token = token;
+        response.status(201).json({ message: "User created", token, user: newUser, success: true })
+
     } catch (error) {
         console.log(error);
         next(new ApiError("Error creating user", 400))
