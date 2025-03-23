@@ -118,7 +118,7 @@ export const getRedeemedByUserCouponList = async (req, res, next) => {
 }
 
 export const getUnUsedCouponList = async (req, res, next) => {
-    const status = req.query.status;
+    const status = req.params.status;
     try {
         if (status === "used") {
             const allCoupons = await couponModel.find({ isUsed: true });
