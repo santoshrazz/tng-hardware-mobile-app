@@ -91,17 +91,17 @@ export const handleRedeemCoupon = async (req, res, next) => {
     }
 
 }
-export const getAllRedeemdCouponList = async (req, res, next) => {
-    try {
-        const coupons = await couponModel.find({ isUsed: true }).populate('usedByUser', 'name _id');
-        if (coupons.length <= 0) {
-            return res.status(200).json({ success: true, message: "No redeemed coupons yet", coupons });
-        }
-        return res.status(200).json({ success: true, message: "coupons retrieved successfully", coupons });
-    } catch (error) {
-        return next(new ApiError("error fetching redeemed coupons", 500))
-    }
-}
+// export const getAllRedeemdCouponList = async (req, res, next) => {
+//     try {
+//         const coupons = await couponModel.find({ isUsed: true }).populate('usedByUser', 'name _id');
+//         if (coupons.length <= 0) {
+//             return res.status(200).json({ success: true, message: "No redeemed coupons yet", coupons });
+//         }
+//         return res.status(200).json({ success: true, message: "coupons retrieved successfully", coupons });
+//     } catch (error) {
+//         return next(new ApiError("error fetching redeemed coupons", 500))
+//     }
+// }
 
 // =========> Admin only Controllers <=============
 export const getRedeemedByUserCouponList = async (req, res, next) => {
@@ -155,7 +155,7 @@ export const deleteUsedCoupon = async (req, res, next) => {
     if (!couponType) {
         return next(new ApiError("Type required Used or Unused", 404))
     }
-    const isUsedorUnused = couponType === "Used" ? true : false;
+    const isUsedorUnused = couponType === "used" ? true : false;
     try {
         const deletedCoupon = await couponModel.deleteMany({ isUsed: isUsedorUnused });
         // if (deletedCoupon?.deletedCount !== 1) {
@@ -163,7 +163,6 @@ export const deleteUsedCoupon = async (req, res, next) => {
         // }
         return res.status(200).json({ message: "coupon Deleted", success: true })
     } catch (error) {
-        console.log("error is", error);
         return next(new ApiError("Error deleting coupon", 500))
     }
 

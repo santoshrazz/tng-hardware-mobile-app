@@ -5,7 +5,7 @@ const couponRouter = express.Router()
 
 couponRouter.post("/create-coupon", verifyUserToken, isAdmin, handleCreateCoupon);
 couponRouter.post("/redeem-coupon", verifyUserToken, handleRedeemCoupon)
-couponRouter.get("/redeemd-coupons-list", verifyUserToken, isAdmin, getAllRedeemdCouponList);
+// couponRouter.get("/redeemd-coupons-list", verifyUserToken, isAdmin, getAllRedeemdCouponList);
 couponRouter.get("/redeemd-coupons-list-user", verifyUserToken, getRedeemedByUserCouponList);
 couponRouter.get("/all-coupons/:status", verifyUserToken, isAdmin, getUnUsedCouponList);
 couponRouter.get("/delete-coupon/:couponId", verifyUserToken, isAdmin, deleteCouponById);
