@@ -1,6 +1,7 @@
 import { app } from "./app.js";
 import dotenv from "dotenv";
 import { connectToDb } from "./db/connect.db.js";
+// import serverless from 'serverless-http'
 
 dotenv.config({ path: "./.env" });
 
@@ -13,3 +14,4 @@ connectToDb()
     .catch((error) => {
         console.log("Error starting the server", error);
     });
+// export const handler = serverless(app)

@@ -118,9 +118,18 @@ export const getRedeemedByUserCouponList = async (req, res, next) => {
 }
 
 export const getUnUsedCouponList = async (req, res, next) => {
+    const status = req.query.status;
     try {
-        const unUsedCoupon = await couponModel.find({ isUsed: false });
-        return res.status(200).json({ message: "", success: false, coupons: unUsedCoupon })
+        if (status === "used") {
+            const allCoupons = await couponModel.find({ isUsed: true });
+            return res.status(200).json({ message: "Used coupons retrieved successfully", success: false, coupons: allCoupons })
+        }
+        else if (status === "unused") {
+            const allCoupons = await couponModel.find({ isUsed: false });
+            return res.status(200).json({ message: "Unused coupons retrieved successfully", success: false, coupons: allCoupons })
+        }
+        const allCoupons = await couponModel.find({});
+        return res.status(200).json({ message: "all coupons retrieved successfully", success: false, coupons: allCoupons })
     } catch (error) {
         return next(new ApiError("Error getting coupons", 500))
     }
