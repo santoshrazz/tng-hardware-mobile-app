@@ -1,5 +1,5 @@
 import express from 'express'
-import { handleCreateCoupon, handleRedeemCoupon, getAllRedeemdCouponList, getRedeemedByUserCouponList, getUnUsedCouponList, deleteCouponById, deleteUsedCoupon } from '../controller/coupon.controller.js';
+import { handleCreateCoupon, handleRedeemCoupon, getRedeemedByUserCouponList, getUnUsedCouponList, deleteCouponById, deleteUsedCoupon } from '../controller/coupon.controller.js';
 import { isAdmin, verifyUserToken } from '../middleware/userVerify.middleware.js';
 const couponRouter = express.Router()
 
