@@ -2,6 +2,7 @@ import { ApiError } from '../middleware/errorHandler.middleware.js'
 import { userModel } from '../models/user.models.js'
 import sendMail from '../utils/sendMail.js'
 import { comparePassword } from '../utils/index.js'
+import { couponModel } from '../models/coupon.models.js'
 export const handleCreateUser = async (request, response, next) => {
     try {
         const { name, email, phone, password } = request.body
@@ -143,13 +144,15 @@ export const loginUser = async (request, response, next) => {
 
 export const getUserProfileDetail = async (request, response, next) => {
     try {
-        const userId = request?.user?.id;
+        const userId = request?.user?.id
         if (!userId) {
             return next(new ApiError("No user id found", 401))
         }
         const user = await userModel.findById(userId).select("-noOfCouponRedeem")
+        const allRedeemdCoupons = await couponModel.find({ usedByUser: user._id })
         response.status(200).json({ success: true, message: "Getting user details successfully", user })
     } catch (error) {
+        console.log("error", error)
         return next(new ApiError("Error getting user profile detail"));
     }
 }
@@ -209,5 +212,18 @@ export const allUsersList = async (req, res, next) => {
         return res.status(200).json({ success: true, users: allUserList, message: "User retrieved successfully" })
     } catch (error) {
         return next(new ApiError("error getting user lists"))
+    }
+}
+export const userDetails = async (request, response, next) => {
+    try {
+        const userId = request?.params?.id
+        if (!userId) {
+            return next(new ApiError("No user id found", 401))
+        }
+        const user = await userModel.findById(userId).select("-noOfCouponRedeem")
+        const allRedeemdCoupons = await couponModel.find({ usedByUser: user._id })
+        response.status(200).json({ success: true, message: "Retrived user details successfully", user, coupons: allRedeemdCoupons })
+    } catch (error) {
+        return next(new ApiError("Error getting user detail"));
     }
 }
