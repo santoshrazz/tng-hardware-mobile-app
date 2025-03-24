@@ -21,6 +21,9 @@ const userSchema = mongoose.Schema({
         select: false,
         required: [true, "Password is require"]
     },
+    profilePic: {
+        type: String,
+    },
     role: {
         type: String,
         enum: ["User", "Admin"],

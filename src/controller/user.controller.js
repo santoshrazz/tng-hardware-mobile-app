@@ -3,6 +3,8 @@ import { userModel } from '../models/user.models.js'
 import sendMail from '../utils/sendMail.js'
 import { comparePassword } from '../utils/index.js'
 import { couponModel } from '../models/coupon.models.js'
+import { uploadToCloudinery } from '../utils/cloudinery.js'
+import { activityModal } from '../models/activity.models.js'
 export const handleCreateUser = async (request, response, next) => {
     try {
         const { name, email, phone, password } = request.body
@@ -32,6 +34,10 @@ export const handleCreateUser = async (request, response, next) => {
         }
 
         const newUser = await userModel.findById(createdUser._id).select("-password -isVerified -userVerificationOtp  -userVerificationOtpExpiry");
+        const activityUpdate = await activityModal.create({
+            message: `${name} just join our platform`,
+            byUser: newUser._id
+        })
         const token = await newUser.generateAuthToken();
         newUser.token = token;
         response.status(201).json({ message: "User created", token, user: newUser, success: true })
@@ -225,5 +231,78 @@ export const userDetails = async (request, response, next) => {
         response.status(200).json({ success: true, message: "Retrived user details successfully", user, coupons: allRedeemdCoupons })
     } catch (error) {
         return next(new ApiError("Error getting user detail"));
+    }
+}
+
+export const updateUserProfile = async (request, response, next) => {
+    try {
+        const userId = request.user.id
+        const { name, email, phone } = request.body;
+        const profilePic = request.file;
+        let userUploadedProfilePic = "";
+        if (profilePic && profilePic?.filename && profilePic?.path) {
+            const uploadUrl = await uploadToCloudinery(profilePic?.path)
+            if (!uploadUrl) {
+                return new ApiError("Error  Uploading Profile Pic", 400)
+            }
+            userUploadedProfilePic = uploadUrl
+        }
+        const updateData = {};
+        if (name) updateData.name = name;
+        if (email) updateData.email = email
+        if (phone) updateData.phone = phone
+        if (userUploadedProfilePic) updateData.profilePic = userUploadedProfilePic;
+        const updatedUser = await userModel.findByIdAndUpdate(userId, updateData, { new: true })
+        response.status(200).json({ success: true, message: "User details updated successfully", user: updatedUser })
+    } catch (error) {
+        return next(new ApiError("Error updating user detail"));
+    }
+}
+export const getRecentActivity = async (request, response, next) => {
+    try {
+        const allActivity = await activityModal.find({});
+        return response.status(200).json({ success: true, message: "Recent activity retrieved successfully", activity: allActivity })
+    } catch (error) {
+        return next(new ApiError("Error retrieving recent activity"));
+    }
+}
+export const getDashboardData = async (req, res, next) => {
+    try {
+        const type = req.params.type;
+        const userId = req.user.id;
+        const dataToSend = {}
+        // ====> Getting the Admin Dashboard Data
+        if (type.toUpperCase() === "ADMIN") {
+            const allUserCount = await userModel.countDocuments();
+            const allCoupons = await couponModel.countDocuments();
+            const allRedeemCoupons = await couponModel.countDocuments({ isUsed: true });
+            dataToSend.userCount = allUserCount
+            dataToSend.CouponCount = allCoupons
+            dataToSend.CouponRedeemCount = allRedeemCoupons
+
+            const allRedeemedCouponList = await couponModel.find({ isUsed: true })
+            let totalRedeemedAmount = 0;
+            allRedeemedCouponList.forEach((coupon) => {
+                totalRedeemedAmount += coupon?.couponAmount || 0
+            })
+            dataToSend.pointsWithdrawn = totalRedeemedAmount;
+            // console.log("allRedeemedCouponList", allRedeemedCouponList)
+            const recentActivity = await activityModal.find({});
+            dataToSend.recentActivity = recentActivity;
+            return res.status(200).json({ success: true, message: "Dashboard data retrieved successfully for admin", data: dataToSend })
+        }
+        else if (type.toUpperCase() === "USER") {
+            const userData = await userModel.findById(userId).select("+totalWalletAmount +noOfCouponRedeem")
+            dataToSend.user = { walletAmout: userData?.totalWalletAmount || 0, redeemCouponCount: userData?.noOfCouponRedeem || 0 }
+
+            const allRecentScanCoupons = await couponModel.find({ isUsed: true }).sort({ createdAt: 1 }).limit(3).populate("usedByUser", "name _id profilePic")
+
+            dataToSend.recentScans = allRecentScanCoupons;
+
+            return res.status(200).json({ success: true, message: "Dashboard data retrieved successfully for user", data: dataToSend })
+        }
+
+    } catch (error) {
+        return next(new ApiError("Error retrieving dashboard data", 500))
     }
 }

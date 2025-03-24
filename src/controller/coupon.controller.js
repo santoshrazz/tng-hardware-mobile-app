@@ -3,11 +3,13 @@ import { ApiError } from "../middleware/errorHandler.middleware.js"; // Assuming
 import { userModel } from "../models/user.models.js";
 import mongoose from "mongoose";
 import { generateCouponCode } from "../utils/index.js";
+import { activityModal } from "../models/activity.models.js";
 
 // ===========>   User only Controller   <================
 export const handleCreateCoupon = async (req, res, next) => {
     try {
         const { amount, couponNo } = req.body;
+        const userId = req.user.id
 
         // Validate input
         if (!amount || !couponNo || couponNo <= 0) {
@@ -36,8 +38,12 @@ export const handleCreateCoupon = async (req, res, next) => {
         }
         // Insert all coupons into the database
         await couponModel.insertMany(coupons);
-
+        await activityModal.create({
+            message: `${coupons.length} coupon created`,
+            byUser: userId
+        })
         const newCoupons = coupons.map(({ couponCode }) => ({ couponCode }));
+
         res.status(201).json({
             success: true,
             message: `${couponNo} coupons created successfully`,
@@ -77,6 +83,10 @@ export const handleRedeemCoupon = async (req, res, next) => {
 
         await session.commitTransaction();
         session.endSession();
+        await activityModal.create({
+            message: `Redeem coupon of ${isCouponExists.couponAmount}`,
+            byUser: userId
+        })
         res.status(200).json({
             message: "Coupon redeemed successfully",
             success: true,
