@@ -5,6 +5,7 @@ import { comparePassword } from '../utils/index.js'
 import { couponModel } from '../models/coupon.models.js'
 import { uploadToCloudinery } from '../utils/cloudinery.js'
 import { activityModal } from '../models/activity.models.js'
+import { productModel } from '../models/product.models.js'
 export const handleCreateUser = async (request, response, next) => {
     try {
         const { name, email, phone, password } = request.body
@@ -271,7 +272,7 @@ export const getDashboardData = async (req, res, next) => {
         const type = req.params.type;
         const userId = req.user.id;
         const dataToSend = {}
-        // ====> Getting the Admin Dashboard Data
+        // ======> Getting the Admin Dashboard Data  <========
         if (type.toUpperCase() === "ADMIN") {
             const allUserCount = await userModel.countDocuments();
             const allCoupons = await couponModel.countDocuments();
@@ -286,7 +287,6 @@ export const getDashboardData = async (req, res, next) => {
                 totalRedeemedAmount += coupon?.couponAmount || 0
             })
             dataToSend.pointsWithdrawn = totalRedeemedAmount;
-            // console.log("allRedeemedCouponList", allRedeemedCouponList)
             const recentActivity = await activityModal.find({});
             dataToSend.recentActivity = recentActivity;
             return res.status(200).json({ success: true, message: "Dashboard data retrieved successfully for admin", data: dataToSend })
@@ -299,6 +299,8 @@ export const getDashboardData = async (req, res, next) => {
 
             dataToSend.recentScans = allRecentScanCoupons;
 
+            const recentProducts = await productModel.find({}).sort({ createdAt: 1 }).limit(4);
+            dataToSend.products = recentProducts;
             return res.status(200).json({ success: true, message: "Dashboard data retrieved successfully for user", data: dataToSend })
         }
 

@@ -1,5 +1,6 @@
 import dotenv from 'dotenv'
 import { v2 as cloudinary } from 'cloudinary'
+import fs from 'fs'
 dotenv.config();
 cloudinary.config({
     cloud_name: process.env.CLOUDINERY_CLOUD_NAME,
@@ -9,8 +10,13 @@ cloudinary.config({
 const uploadToCloudinery = async (filePath) => {
     try {
         const url = await cloudinary.uploader.upload(filePath, { resource_type: "auto" })
-        return url?.secure_url;
+        if (url) {
+            fs.unlinkSync(filePath)
+            return url?.secure_url;
+        }
+        return null
     } catch (error) {
+        console.log("error", error)
         return null
     }
 }
