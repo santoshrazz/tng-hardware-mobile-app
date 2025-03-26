@@ -6,6 +6,7 @@ import { couponModel } from '../models/coupon.models.js'
 import { uploadToCloudinery } from '../utils/cloudinery.js'
 import { activityModal } from '../models/activity.models.js'
 import { productModel } from '../models/product.models.js'
+import { timeDifference } from '../constants/index.js'
 export const handleCreateUser = async (request, response, next) => {
     try {
         const { name, email, phone, password } = request.body
@@ -287,8 +288,20 @@ export const getDashboardData = async (req, res, next) => {
                 totalRedeemedAmount += coupon?.couponAmount || 0
             })
             dataToSend.pointsWithdrawn = totalRedeemedAmount;
-            const recentActivity = await activityModal.find({});
-            dataToSend.recentActivity = recentActivity;
+            const recentActivity = await activityModal.find({}).populate("byUser", "name _id profilePic").limit(3);
+            console.log("recentActivity", recentActivity)
+            const recentActivityArrayModified = recentActivity.map((activity) => {
+                const timeDiff = timeDifference(activity.createdAt)
+                const simpleObject = {
+                    id: activity._id,
+                    user: activity?.byUser?.name,
+                    action: activity.message,
+                    avatar: activity?.byUser?.profilePic || "",
+                    time: timeDiff
+                }
+                return simpleObject
+            })
+            dataToSend.recentActivity = recentActivityArrayModified;
             return res.status(200).json({ success: true, message: "Dashboard data retrieved successfully for admin", data: dataToSend })
         }
         else if (type.toUpperCase() === "USER") {
