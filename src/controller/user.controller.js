@@ -37,7 +37,7 @@ export const handleCreateUser = async (request, response, next) => {
 
         const newUser = await userModel.findById(createdUser._id).select("-password -isVerified -userVerificationOtp  -userVerificationOtpExpiry");
         const activityUpdate = await activityModal.create({
-            message: `${name} just join our platform`,
+            message: ` just join our platform`,
             byUser: newUser._id
         })
         const token = await newUser.generateAuthToken();
@@ -95,10 +95,10 @@ export const verifyUser = async (request, response, next) => {
 
 export const loginUser = async (request, response, next) => {
     try {
-        const { email, password } = request.body;
+        const { email, password, phone } = request.body;
 
         // Check if email and password are provided
-        if (!email || !password) {
+        if (!email || !password || !phone) {
             return response.status(400).json({
                 success: false,
                 message: "Email and password are required.",
@@ -106,7 +106,7 @@ export const loginUser = async (request, response, next) => {
         }
 
         // Find the user by email, including the password (since it's marked as `select: false` in the schema)
-        const user = await userModel.findOne({ email }).select("+password +isVerified +role");
+        const user = await userModel.findOne().select("+password +isVerified +role");
 
         // Check if the user exists
         if (!user) {
@@ -239,7 +239,7 @@ export const userDetails = async (request, response, next) => {
 export const updateUserProfile = async (request, response, next) => {
     try {
         const userId = request.user.id
-        const { name, email, phone } = request.body;
+        const { name, email, phone, address } = request.body;
         const profilePic = request.file;
         let userUploadedProfilePic = "";
         if (profilePic && profilePic?.filename && profilePic?.path) {
@@ -253,8 +253,9 @@ export const updateUserProfile = async (request, response, next) => {
         if (name) updateData.name = name;
         if (email) updateData.email = email
         if (phone) updateData.phone = phone
+        if (address) updateData.address = address
         if (userUploadedProfilePic) updateData.profilePic = userUploadedProfilePic;
-        const updatedUser = await userModel.findByIdAndUpdate(userId, updateData, { new: true })
+        const updatedUser = await userModel.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true })
         response.status(200).json({ success: true, message: "User details updated successfully", user: updatedUser })
     } catch (error) {
         return next(new ApiError("Error updating user detail"));
@@ -275,7 +276,7 @@ export const getDashboardData = async (req, res, next) => {
         const dataToSend = {}
         // ======> Getting the Admin Dashboard Data  <========
         if (type.toUpperCase() === "ADMIN") {
-            const allUserCount = await userModel.countDocuments();
+            const allUserCount = await userModel.countDocuments({ role: "User" });
             const allCoupons = await couponModel.countDocuments();
             const allRedeemCoupons = await couponModel.countDocuments({ isUsed: true });
             dataToSend.userCount = allUserCount
@@ -289,7 +290,6 @@ export const getDashboardData = async (req, res, next) => {
             })
             dataToSend.pointsWithdrawn = totalRedeemedAmount;
             const recentActivity = await activityModal.find({}).populate("byUser", "name _id profilePic").limit(3);
-            console.log("recentActivity", recentActivity)
             const recentActivityArrayModified = recentActivity.map((activity) => {
                 const timeDiff = timeDifference(activity.createdAt)
                 const simpleObject = {

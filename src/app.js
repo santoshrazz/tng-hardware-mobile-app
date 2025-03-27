@@ -6,6 +6,7 @@ import couponRouter from './Routes/coupon.routes.js'
 import cookieParser from 'cookie-parser'
 import { rateLimit } from 'express-rate-limit'
 import productRoute from './Routes/product.routes.js'
+import paymentRouter from './Routes/payment.routes.js'
 
 const app = express()
 app.use(express.json({ limit: "16kb", }))
@@ -30,6 +31,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/user", userRouter)
 app.use("/api/v1/coupon", couponRouter)
 app.use("/api/v1/product", productRoute)
+app.use("/api/v1/payment", paymentRouter)
 app.use(errorHandler);
 
 export { app }

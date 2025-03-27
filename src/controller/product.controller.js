@@ -2,37 +2,34 @@ import { ApiError } from "../middleware/errorHandler.middleware.js"
 import { productModel } from "../models/product.models.js"
 import { uploadToCloudinery } from "../utils/cloudinery.js"
 
-export const createProduct = async (request, response) => {
+export const createProduct = async (request, response, next) => {
     const { title, description, points, price } = request.body
     let thumbnail = ""
     const thumbnailFile = request.file
     try {
         if (thumbnailFile && thumbnailFile?.filename && thumbnailFile?.path) {
             const thumbnailUrl = await uploadToCloudinery(thumbnailFile.path)
-            console.log("thumbnail", thumbnailUrl)
             if (thumbnailUrl) {
                 thumbnail = thumbnailUrl
             }
         }
-        console.log("thumbnail", thumbnail)
         const createdProduct = await productModel.create({ title, description, price, points, thumbnail })
         response.status(200).json({ success: true, message: "Product created", product: createdProduct })
     } catch (error) {
-        return new ApiError("Error while creating product", 500)
+        return next(new ApiError("Error while creating product", 500))
     }
 }
 
-export const getAllProducts = async (request, response) => {
+export const getAllProducts = async (request, response, next) => {
     try {
         const allProduct = await productModel.find({});
         return response.status(200).json({ success: true, message: "All product retrived", product: allProduct })
     } catch (error) {
-        console.log("Error while retrieving products", error)
-        return new ApiError("Error while retrieving products", 500)
+        return next(new ApiError("Error while retrieving products", 500))
     }
 }
 
-export const deleteProduct = async (request, response) => {
+export const deleteProduct = async (request, response, next) => {
     const productId = request.params.id
     if (!productId) {
         return new ApiError("Product id required to delete product", 400)
@@ -41,12 +38,11 @@ export const deleteProduct = async (request, response) => {
         const deletedProduct = await productModel.findByIdAndDelete(productId)
         return response.status(200).json({ success: true, message: "Product deleted" })
     } catch (error) {
-        console.log("Having error while deleting product", error)
-        return new ApiError("Having error while deleting product", 500)
+        return next(new ApiError("Having error while deleting product", 500))
     }
 }
 
-export const updateProduct = async (request, response) => {
+export const updateProduct = async (request, response, next) => {
     const productId = request.params.id;
     const updates = request.body; // Contains the fields the user wants to update
     let thumbnail = "";
@@ -80,7 +76,6 @@ export const updateProduct = async (request, response) => {
 
         return response.status(200).json({ success: true, message: "Product updated", product: updatedProduct });
     } catch (error) {
-        console.log("Error while updating product", error);
-        return new ApiError("Error while updating product", 500);
+        return next(new ApiError("Error while updating product", 500))
     }
 };

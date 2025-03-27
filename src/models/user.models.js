@@ -1,4 +1,4 @@
-import mongoose, { Mongoose } from 'mongoose'
+import mongoose from 'mongoose'
 import bcryptjs from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 const userSchema = mongoose.Schema({
@@ -23,6 +23,10 @@ const userSchema = mongoose.Schema({
     },
     profilePic: {
         type: String,
+        default: "https://res.cloudinary.com/dskra60sa/image/upload/v1743086699/man_rqv4zk.png"
+    },
+    address: {
+        type: String
     },
     role: {
         type: String,
@@ -55,6 +59,7 @@ const userSchema = mongoose.Schema({
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next()
     this.password = await bcryptjs.hash(this.password, 10)
+    // this.createdAt = formatDate(this.createdAt)
     next()
 })
 

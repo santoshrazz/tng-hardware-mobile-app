@@ -30,3 +30,11 @@ export function timeDifference(createdAt) {
     const diffInYears = Math.floor(diffInMonths / 12);
     return `${diffInYears} years ago`;
 }
+
+export function formatDate(createdAt) {
+    const date = new Date(createdAt);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
