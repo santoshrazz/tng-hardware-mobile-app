@@ -95,10 +95,10 @@ export const verifyUser = async (request, response, next) => {
 
 export const loginUser = async (request, response, next) => {
     try {
-        const { email, password, phone } = request.body;
+        const { email, password } = request.body;
 
         // Check if email and password are provided
-        if (!email || !password || !phone) {
+        if (!email || !password) {
             return response.status(400).json({
                 success: false,
                 message: "Email and password are required.",
@@ -106,7 +106,7 @@ export const loginUser = async (request, response, next) => {
         }
 
         // Find the user by email, including the password (since it's marked as `select: false` in the schema)
-        const user = await userModel.findOne().select("+password +isVerified +role");
+        const user = await userModel.findOne({ email }).select("+password +isVerified +role");
 
         // Check if the user exists
         if (!user) {
