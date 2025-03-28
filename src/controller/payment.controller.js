@@ -16,7 +16,8 @@ export const createPayment = async (req, res, next) => {
         if (paymentRequestedUser.totalWalletAmount < amount) {
             return next(new ApiError("You have insufficient wallet balance", 400));
         }
-        paymentRequestedUser.totalWalletAmount -= amount
+        paymentRequestedUser.totalWalletAmount -= amount;
+        paymentRequestedUser.totalWithdrawnAmount += amount;
         const createdPayment = await paymentModal.create([{ upiId, amount, status: "pending", byUser: userId }], { session })
         await paymentRequestedUser.save({ session })
         await session.commitTransaction()
@@ -69,5 +70,42 @@ export const getAllPaymentAdmin = async (req, res, next) => {
         return res.status(200).json({ message: "Pending payments retrieved", payment: payments })
     } catch (error) {
         return next(new ApiError("failed to fetch admin activity", 500))
+    }
+}
+
+export async function processPayment(req, res, next) {
+    try {
+        const { userId, amount, transetionId, paymentMethod, paymentId } = req.body;
+        const reqUserId = req.user.id;
+        const currentUser = await userModel.findById(reqUserId);
+        if (currentUser.role !== "Admin") {
+            return next(new ApiError("Invalid Request", 401))
+        }
+        const currentPendingPayment = await paymentModal.findById(paymentId);
+        if (!currentPendingPayment) {
+            return next(new ApiError("No Payment found with the payment id"))
+        }
+        if (currentPendingPayment.status !== "pending") {
+            return next(new ApiError(`Your payment status is already ${currentPendingPayment.status}`))
+        }
+        if (currentPendingPayment.amount !== amount || currentPendingPayment.byUser !== userId) {
+            return next(new ApiError("Pending amount and receiver amount doesn't match"))
+        }
+        if (paymentMethod.toLowerCase() === "cash") {
+            currentPendingPayment.paymentMethod = "cash"
+            currentPendingPayment.status = "completed"
+            await currentPendingPayment.save()
+            return res.status(200).json({ message: "Payment made Successfully with cash", success: true })
+        }
+        else {
+            currentPendingPayment.paymentMethod = "upi"
+            currentPendingPayment.status = "completed"
+            currentPendingPayment.transectionId = transetionId;
+            await currentPendingPayment.save()
+            return res.status(200).json({ message: "Payment made Successfully with cash", success: true })
+        }
+
+    } catch (error) {
+        return next(new ApiError("Error processing payments", 500))
     }
 }

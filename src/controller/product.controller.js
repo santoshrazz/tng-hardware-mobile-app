@@ -3,7 +3,7 @@ import { productModel } from "../models/product.models.js"
 import { uploadToCloudinery } from "../utils/cloudinery.js"
 
 export const createProduct = async (request, response, next) => {
-    const { title, description, points, price } = request.body
+    const { title, description, points, price, isFeatured } = request.body
     let thumbnail = ""
     const thumbnailFile = request.file
     try {
@@ -13,7 +13,7 @@ export const createProduct = async (request, response, next) => {
                 thumbnail = thumbnailUrl
             }
         }
-        const createdProduct = await productModel.create({ title, description, price, points, thumbnail })
+        const createdProduct = await productModel.create({ title, description, price, points, thumbnail, isFeatured })
         response.status(200).json({ success: true, message: "Product created", product: createdProduct })
     } catch (error) {
         return next(new ApiError("Error while creating product", 500))

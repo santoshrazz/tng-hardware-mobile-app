@@ -11,9 +11,12 @@ const userSchema = mongoose.Schema({
         type: String,
         unique: true,
         lowercase: true,
+        trim: true
     },
     phone: {
         type: Number,
+        trim: true,
+        required: [true, "Phone number is required"]
     },
     password: {
         type: String,
@@ -41,6 +44,10 @@ const userSchema = mongoose.Schema({
         type: Number,
         default: 0
     },
+    totalWithdrawnAmount: {
+        type: Number,
+        default: 0
+    },
     isVerified: {
         type: Boolean,
         default: false
@@ -59,7 +66,6 @@ const userSchema = mongoose.Schema({
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next()
     this.password = await bcryptjs.hash(this.password, 10)
-    // this.createdAt = formatDate(this.createdAt)
     next()
 })
 

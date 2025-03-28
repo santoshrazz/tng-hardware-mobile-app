@@ -15,6 +15,10 @@ const productSchema = new Schema({
         type: Number,
         required: [true, "Points required"]
     },
+    isFeatured: {
+        type: Boolean,
+        default: false,
+    },
     price: {
         type: Number
     }

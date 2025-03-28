@@ -1,3 +1,4 @@
+import { paymentModal } from "../models/payment.models.js"
 import { userModel } from "../models/user.models.js"
 import { ApiError } from "./errorHandler.middleware.js"
 import jwt from 'jsonwebtoken'

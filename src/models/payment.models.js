@@ -12,6 +12,15 @@ const paymentSchema = new Schema({
         type: String,
         enum: ["pending", "failed", "completed"]
     },
+    transectionId: {
+        type: String,
+        trim: true
+    },
+    paymentMethod: {
+        type: String,
+        trim: true,
+        enum: ["cash", "upi"]
+    },
     byUser: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "user",

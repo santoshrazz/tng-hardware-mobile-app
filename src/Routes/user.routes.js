@@ -2,12 +2,12 @@ import express from 'express'
 import { handleCreateUser, loginUser, verifyUser, getUserProfileDetail, changePassword, handleForgetPassword, allUsersList, userDetails, updateUserProfile, getRecentActivity, getDashboardData } from '../controller/user.controller.js';
 import { isAdmin, verifyUserToken } from '../middleware/userVerify.middleware.js';
 import { upload } from '../utils/multer.js';
-import { registrationValidator } from '../middleware/validator.middleware.js';
+import { loginFieldValidator, registrationValidator } from '../middleware/validator.middleware.js';
 const userRouter = express.Router();
 
 userRouter.post("/create-user", registrationValidator, handleCreateUser);
 userRouter.post("/verify-user", verifyUser);
-userRouter.post("/login-user", loginUser);
+userRouter.post("/login-user", loginFieldValidator, loginUser);
 userRouter.get("/profile", verifyUserToken, getUserProfileDetail)
 userRouter.put("/profile-update", verifyUserToken, upload.single('profilePic'), updateUserProfile)
 userRouter.get("/change-password", verifyUserToken, changePassword)

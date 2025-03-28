@@ -1,0 +1,2 @@
+Add full payment procedure
+test all payment routes and implement validation on each of routes.

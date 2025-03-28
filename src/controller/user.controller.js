@@ -7,6 +7,7 @@ import { uploadToCloudinery } from '../utils/cloudinery.js'
 import { activityModal } from '../models/activity.models.js'
 import { productModel } from '../models/product.models.js'
 import { timeDifference } from '../constants/index.js'
+import { validationResult } from 'express-validator'
 export const handleCreateUser = async (request, response, next) => {
     try {
         const { name, email, phone, password } = request.body
@@ -95,18 +96,19 @@ export const verifyUser = async (request, response, next) => {
 
 export const loginUser = async (request, response, next) => {
     try {
-        const { email, password } = request.body;
-
-        // Check if email and password are provided
-        if (!email || !password) {
-            return response.status(400).json({
-                success: false,
-                message: "Email and password are required.",
-            });
+        const errors = validationResult(request);
+        if (!errors.isEmpty()) {
+            return response.status(400).json({ errors: errors.array() });
         }
+        const { email, password, phone } = request.body;
 
         // Find the user by email, including the password (since it's marked as `select: false` in the schema)
-        const user = await userModel.findOne({ email }).select("+password +isVerified +role");
+        const user = await userModel.findOne({
+            $or: [
+                { email },
+                { phone: email }
+            ]
+        }).select("+password +isVerified +role");
 
         // Check if the user exists
         if (!user) {
@@ -146,6 +148,7 @@ export const loginUser = async (request, response, next) => {
             user: userResponse,
         });
     } catch (error) {
+        console.log("error", error)
         next(new ApiError("An error occurred during login. Please try again.", 500));
     }
 };
@@ -312,7 +315,7 @@ export const getDashboardData = async (req, res, next) => {
 
             dataToSend.recentScans = allRecentScanCoupons;
 
-            const recentProducts = await productModel.find({}).sort({ createdAt: 1 }).limit(4);
+            const recentProducts = await productModel.find({ isFeatured: true }).sort({ createdAt: 1 }).limit(4);
             dataToSend.products = recentProducts;
             return res.status(200).json({ success: true, message: "Dashboard data retrieved successfully for user", data: dataToSend })
         }
