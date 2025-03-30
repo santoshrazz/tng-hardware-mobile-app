@@ -117,11 +117,17 @@ export const handleRedeemCoupon = async (req, res, next) => {
 export const getRedeemedByUserCouponList = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const coupons = await couponModel.find({ usedByUser: userId });
-        if (coupons.length <= 0) {
-            return res.status(200).json({ success: true, message: "No redeemed coupons yet", coupons });
+        const userDetails = await userModel.findById(userId);
+        const dataToSend = {
+            totalWalletAmount: userDetails.totalWalletAmount,
+            totalWithdrawnAmount: userDetails.totalWithdrawnAmount,
+            pointsTillNow: userDetails.totalWalletAmount + userDetails.totalWithdrawnAmount
         }
-        return res.status(200).json({ success: true, message: "coupons retrieved successfully", coupons });
+        const coupons = await couponModel.find({ usedByUser: userId })
+        if (coupons.length <= 0) {
+            return res.status(200).json({ success: true, message: "No redeemed coupons yet", userDetails: dataToSend, coupons });
+        }
+        return res.status(200).json({ success: true, userDetails: dataToSend, message: "coupons retrieved successfully", coupons });
     } catch (error) {
         return next(new ApiError("error fetching redeemed coupons", 500))
     }

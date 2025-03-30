@@ -16,7 +16,7 @@ export const handleCreateUser = async (request, response, next) => {
         }
         const isUserExists = await userModel.findOne({ email })
         if (isUserExists) {
-            next(new ApiError("User already exists try logging into your account", 400))
+            return next(new ApiError("User already exists try logging into your account", 400))
         }
         // const userOtp = Math.floor(100000 + Math.random() * 900000);
         // TODO ---> Send mail to user
@@ -100,7 +100,7 @@ export const loginUser = async (request, response, next) => {
         if (!errors.isEmpty()) {
             return response.status(400).json({ errors: errors.array() });
         }
-        const { email, password, phone } = request.body;
+        const { email, password } = request.body;
 
         // Find the user by email, including the password (since it's marked as `select: false` in the schema)
         const user = await userModel.findOne({
