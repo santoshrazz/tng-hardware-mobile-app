@@ -56,17 +56,17 @@ export const getAllPaymentAdmin = async (req, res, next) => {
     }
     try {
         if (paymentType.toLowerCase() === "pending") {
-            const payments = await paymentModal.find({ status: "pending" }).sort({ createdAt: 1 }).populate("byUser", "name _id profilePic")
+            const payments = await paymentModal.find({ status: "pending" }).sort({ createdAt: -1 }).populate("byUser", "name _id profilePic")
             return res.status(200).json({ message: "Pending payments retrieved", payment: payments })
         } else if (paymentType.toLowerCase() === "completed") {
-            const payments = await paymentModal.find({ status: "completed" }).sort({ createdAt: 1 }).populate("byUser", "name _id profilePic")
+            const payments = await paymentModal.find({ status: "completed" }).sort({ createdAt: -11 }).populate("byUser", "name _id profilePic")
             return res.status(200).json({ message: "Pending payments retrieved", payment: payments })
         }
         else if (paymentType.toLowerCase() === "failed") {
-            const payments = await paymentModal.find({ status: "failed" }).sort({ createdAt: 1 }).populate("byUser", "name _id profilePic")
+            const payments = await paymentModal.find({ status: "failed" }).sort({ createdAt: -11 }).populate("byUser", "name _id profilePic")
             return res.status(200).json({ message: "Pending payments retrieved", payment: payments })
         }
-        const payments = await paymentModal.find({}).sort({ createdAt: 1 }).populate("byUser", "name _id profilePic")
+        const payments = await paymentModal.find({}).sort({ createdAt: -11 }).populate("byUser", "name _id profilePic")
         return res.status(200).json({ message: "Pending payments retrieved", payment: payments })
     } catch (error) {
         return next(new ApiError("failed to fetch admin activity", 500))

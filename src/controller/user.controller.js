@@ -132,7 +132,7 @@ export const loginUser = async (request, response, next) => {
 
         // Exclude sensitive fields before sending the user data
         const userResponse = {
-            id: user._id,
+            _id: user._id,
             name: user.name,
             email: user.email,
             role: user.role,
@@ -266,7 +266,7 @@ export const updateUserProfile = async (request, response, next) => {
 }
 export const getRecentActivity = async (request, response, next) => {
     try {
-        const allActivity = await activityModal.find({});
+        const allActivity = await activityModal.find({}).populate("byUser", "name _id profilePic");
         return response.status(200).json({ success: true, message: "Recent activity retrieved successfully", activity: allActivity })
     } catch (error) {
         return next(new ApiError("Error retrieving recent activity"));
@@ -292,11 +292,11 @@ export const getDashboardData = async (req, res, next) => {
                 totalRedeemedAmount += coupon?.couponAmount || 0
             })
             dataToSend.pointsWithdrawn = totalRedeemedAmount;
-            const recentActivity = await activityModal.find({}).populate("byUser", "name _id profilePic").limit(3);
+            const recentActivity = await activityModal.find({}).sort({ createdAt: -1 }).populate("byUser", "name _id profilePic").limit(3);
             const recentActivityArrayModified = recentActivity.map((activity) => {
                 const timeDiff = timeDifference(activity.createdAt)
                 const simpleObject = {
-                    id: activity._id,
+                    _id: activity._id,
                     user: activity?.byUser?.name,
                     action: activity.message,
                     avatar: activity?.byUser?.profilePic || "",
@@ -311,11 +311,11 @@ export const getDashboardData = async (req, res, next) => {
             const userData = await userModel.findById(userId).select("+totalWalletAmount +noOfCouponRedeem")
             dataToSend.user = { walletAmout: userData?.totalWalletAmount || 0, redeemCouponCount: userData?.noOfCouponRedeem || 0 }
 
-            const allRecentScanCoupons = await couponModel.find({ isUsed: true, usedByUser: userId }).sort({ createdAt: 1 }).limit(3).populate("usedByUser", "name _id profilePic")
+            const allRecentScanCoupons = await couponModel.find({ isUsed: true, usedByUser: userId }).sort({ createdAt: -1 }).limit(3).populate("usedByUser", "name _id profilePic")
 
             dataToSend.recentScans = allRecentScanCoupons;
 
-            const recentProducts = await productModel.find({ isFeatured: true }).sort({ createdAt: 1 }).limit(4);
+            const recentProducts = await productModel.find({ isFeatured: true }).sort({ createdAt: -1 }).limit(4);
             dataToSend.products = recentProducts;
             return res.status(200).json({ success: true, message: "Dashboard data retrieved successfully for user", data: dataToSend })
         }
