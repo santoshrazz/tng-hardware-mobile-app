@@ -8,6 +8,7 @@ import { activityModal } from '../models/activity.models.js'
 import { productModel } from '../models/product.models.js'
 import { timeDifference } from '../constants/index.js'
 import { validationResult } from 'express-validator'
+import { paymentModal } from '../models/payment.models.js'
 export const handleCreateUser = async (request, response, next) => {
     try {
         const { name, email, phone, password } = request.body
@@ -287,8 +288,12 @@ export const getDashboardData = async (req, res, next) => {
         const type = req.params.type;
         const userId = req.user.id;
         const dataToSend = {}
+        const currentUser = await userModel.findById(userId);
         // ======> Getting the Admin Dashboard Data  <========
         if (type.toUpperCase() === "ADMIN") {
+            if (currentUser?.role !== "Admin") {
+                return next(new ApiError("You don't have Permission of this resource", 401));
+            }
             const allUserCount = await userModel.countDocuments({ role: "User" });
             const allCoupons = await couponModel.countDocuments();
             const allRedeemCoupons = await couponModel.countDocuments({ isUsed: true });
@@ -315,6 +320,8 @@ export const getDashboardData = async (req, res, next) => {
                 return simpleObject
             })
             dataToSend.recentActivity = recentActivityArrayModified;
+            const pendingCouponApproval = await paymentModal.countDocuments({ status: "pending" })
+            dataToSend.pendingCouponApproval = pendingCouponApproval;
             return res.status(200).json({ success: true, message: "Dashboard data retrieved successfully for admin", data: dataToSend })
         }
         else if (type.toUpperCase() === "USER") {
