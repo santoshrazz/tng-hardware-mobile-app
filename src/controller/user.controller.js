@@ -41,9 +41,18 @@ export const handleCreateUser = async (request, response, next) => {
             message: ` just join our platform`,
             byUser: newUser._id
         })
+        const userResponse = {
+            _id: newUser._id,
+            name: newUser.name,
+            email: newUser.email,
+            role: newUser.role,
+            totalWalletAmount: newUser.totalWalletAmount,
+            noOfCouponRedeem: newUser.noOfCouponRedeem,
+            profilePic: newUser.profilePic
+        };
         const token = await newUser.generateAuthToken();
         newUser.token = token;
-        response.status(201).json({ message: "User created", token, user: newUser, success: true })
+        response.status(201).json({ message: "User created", token, user: userResponse, success: true })
 
     } catch (error) {
         console.log(error);
@@ -138,6 +147,7 @@ export const loginUser = async (request, response, next) => {
             role: user.role,
             totalWalletAmount: user.totalWalletAmount,
             noOfCouponRedeem: user.noOfCouponRedeem,
+            profilePic: user.profilePic
         };
 
         // Send the response
