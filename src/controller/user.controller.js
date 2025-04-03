@@ -311,7 +311,7 @@ export const getDashboardData = async (req, res, next) => {
             const userData = await userModel.findById(userId).select("+totalWalletAmount +noOfCouponRedeem")
             dataToSend.user = { walletAmout: userData?.totalWalletAmount || 0, redeemCouponCount: userData?.noOfCouponRedeem || 0 }
 
-            const allRecentScanCoupons = await couponModel.find({ isUsed: true }).sort({ createdAt: 1 }).limit(3).populate("usedByUser", "name _id profilePic")
+            const allRecentScanCoupons = await couponModel.find({ isUsed: true, usedByUser: userId }).sort({ createdAt: 1 }).limit(3).populate("usedByUser", "name _id profilePic")
 
             dataToSend.recentScans = allRecentScanCoupons;
 
