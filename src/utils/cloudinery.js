@@ -16,7 +16,6 @@ const uploadToCloudinery = async (filePath) => {
         }
         return null
     } catch (error) {
-        console.log("error", error)
         return null
     }
 }

@@ -6,6 +6,15 @@ import { userModel } from "../models/user.models.js";
 export const createPayment = async (req, res, next) => {
     const userId = req.user.id;
     const { upiId, amount } = req.body;
+    const isAlreadyPendingPayment = await paymentModal.findOne({
+        $and: [
+            { byUser: userId, },
+            { status: "pending" }
+        ]
+    })
+    if (isAlreadyPendingPayment) {
+        return next(new ApiError("New request can't generated while already pending payment"))
+    }
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
@@ -69,7 +78,7 @@ export const getAllPaymentAdmin = async (req, res, next) => {
             })
             return res.status(200).json({ success: true, message: "Pending payments retrieved", payment: allPayment })
         } else if (paymentType.toLowerCase() === "approved") {
-            const payments = await paymentModal.find({ status: "approved" }).sort({ createdAt: -11 }).populate("byUser", "name _id profilePic")
+            const payments = await paymentModal.find({ status: "approved" }).sort({ createdAt: -1 }).populate("byUser", "name _id profilePic")
             const allPayment = payments.map((payment) => {
                 const dataToSend = {
                     _id: payment._id,
@@ -78,14 +87,15 @@ export const getAllPaymentAdmin = async (req, res, next) => {
                     upiId: payment?.upiId,
                     amount: payment.amount,
                     name: payment?.byUser?.name,
-                    status: payment.status
+                    status: payment.status,
+                    transectionId: payment.transectionId || ""
                 }
                 return dataToSend
             })
             return res.status(200).json({ success: true, message: "Pending payments retrieved", payment: allPayment })
         }
         else if (paymentType.toLowerCase() === "rejected") {
-            const payments = await paymentModal.find({ status: "rejected" }).sort({ createdAt: -11 }).populate("byUser", "name _id profilePic")
+            const payments = await paymentModal.find({ status: "rejected" }).sort({ createdAt: -1 }).populate("byUser", "name _id profilePic")
             const allPayment = payments.map((payment) => {
                 const dataToSend = {
                     _id: payment._id,
@@ -100,7 +110,7 @@ export const getAllPaymentAdmin = async (req, res, next) => {
             })
             return res.status(200).json({ success: true, message: "Pending payments retrieved", payment: allPayment })
         }
-        const payments = await paymentModal.find({}).sort({ createdAt: -11 }).populate("byUser", "name _id profilePic")
+        const payments = await paymentModal.find({}).sort({ createdAt: -1 }).populate("byUser", "name _id profilePic")
         const allPayment = payments.map((payment) => {
             const dataToSend = {
                 _id: payment._id,
@@ -134,7 +144,7 @@ export async function processPayment(req, res, next) {
         if (currentPendingPayment.status !== "pending") {
             return next(new ApiError(`Your payment status is already ${currentPendingPayment.status}`))
         }
-        if (currentPendingPayment.amount !== amount || currentPendingPayment.byUser !== userId) {
+        if (currentPendingPayment.amount !== amount || !currentPendingPayment.byUser.equals(userId)) {
             return next(new ApiError("Pending amount and receiver amount doesn't match"))
         }
         if (paymentMethod.toLowerCase() === "cash") {
@@ -145,10 +155,10 @@ export async function processPayment(req, res, next) {
         }
         else {
             currentPendingPayment.paymentMethod = "upi"
-            currentPendingPayment.status = "completed"
+            currentPendingPayment.status = "approved"
             currentPendingPayment.transectionId = transetionId;
             await currentPendingPayment.save()
-            return res.status(200).json({ message: "Payment made Successfully with cash", success: true })
+            return res.status(200).json({ message: "Payment made Successfully with upi", success: true })
         }
 
     } catch (error) {

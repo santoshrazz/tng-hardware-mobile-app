@@ -56,7 +56,6 @@ export const handleCreateUser = async (request, response, next) => {
         response.status(201).json({ message: "User created", token, user: userResponse, success: true })
 
     } catch (error) {
-        console.log(error);
         next(new ApiError("Error creating user", 400))
     }
 }
@@ -99,7 +98,6 @@ export const verifyUser = async (request, response, next) => {
 
         response.status(200).json({ message: "User successfully verified", success: true });
     } catch (error) {
-        console.log(error);
         next(new ApiError("Error verifying user", 500));
     }
 };
@@ -159,7 +157,6 @@ export const loginUser = async (request, response, next) => {
             user: userResponse,
         });
     } catch (error) {
-        console.log("error", error)
         next(new ApiError("An error occurred during login. Please try again.", 500));
     }
 };
@@ -174,7 +171,6 @@ export const getUserProfileDetail = async (request, response, next) => {
         const allRedeemdCoupons = await couponModel.find({ usedByUser: user._id })
         response.status(200).json({ success: true, message: "Getting user details successfully", user })
     } catch (error) {
-        console.log("error", error)
         return next(new ApiError("Error getting user profile detail"));
     }
 }
@@ -201,7 +197,6 @@ export const changePassword = async (request, response, next) => {
         await currentUser.save();
         return response.status(200).json({ success: true, message: "password changed successfully" })
     } catch (error) {
-        console.log("Error changing user password", error);
         return next(new ApiError("Error changing user password", 500))
     }
 }
