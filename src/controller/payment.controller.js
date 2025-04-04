@@ -51,23 +51,69 @@ export const getPendingPayments = async (req, res, next) => {
 
 export const getAllPaymentAdmin = async (req, res, next) => {
     const paymentType = req.query.type;
-    if (!paymentType) {
-        return next(new ApiError("Activity type required", 400));
-    }
     try {
         if (paymentType.toLowerCase() === "pending") {
             const payments = await paymentModal.find({ status: "pending" }).sort({ createdAt: -1 }).populate("byUser", "name _id profilePic")
-            return res.status(200).json({ message: "Pending payments retrieved", payment: payments })
-        } else if (paymentType.toLowerCase() === "completed") {
-            const payments = await paymentModal.find({ status: "completed" }).sort({ createdAt: -11 }).populate("byUser", "name _id profilePic")
-            return res.status(200).json({ message: "Pending payments retrieved", payment: payments })
+            // console.log("dataToSend", payments)
+            const allPayment = payments.map((payment) => {
+                const dataToSend = {
+                    _id: payment._id,
+                    userId: payment?.byUser?._id,
+                    profilePic: payment?.byUser?.profilePic,
+                    upiId: payment?.upiId,
+                    amount: payment.amount,
+                    name: payment?.byUser?.name,
+                    status: payment.status
+                }
+                return dataToSend
+            })
+            return res.status(200).json({ success: true, message: "Pending payments retrieved", payment: allPayment })
+        } else if (paymentType.toLowerCase() === "approved") {
+            const payments = await paymentModal.find({ status: "approved" }).sort({ createdAt: -11 }).populate("byUser", "name _id profilePic")
+            const allPayment = payments.map((payment) => {
+                const dataToSend = {
+                    _id: payment._id,
+                    userId: payment?.byUser?._id,
+                    profilePic: payment?.byUser?.profilePic,
+                    upiId: payment?.upiId,
+                    amount: payment.amount,
+                    name: payment?.byUser?.name,
+                    status: payment.status
+                }
+                return dataToSend
+            })
+            return res.status(200).json({ success: true, message: "Pending payments retrieved", payment: allPayment })
         }
-        else if (paymentType.toLowerCase() === "failed") {
-            const payments = await paymentModal.find({ status: "failed" }).sort({ createdAt: -11 }).populate("byUser", "name _id profilePic")
-            return res.status(200).json({ message: "Pending payments retrieved", payment: payments })
+        else if (paymentType.toLowerCase() === "rejected") {
+            const payments = await paymentModal.find({ status: "rejected" }).sort({ createdAt: -11 }).populate("byUser", "name _id profilePic")
+            const allPayment = payments.map((payment) => {
+                const dataToSend = {
+                    _id: payment._id,
+                    userId: payment?.byUser?._id,
+                    profilePic: payment?.byUser?.profilePic,
+                    upiId: payment?.upiId,
+                    amount: payment.amount,
+                    name: payment?.byUser?.name,
+                    status: payment.status
+                }
+                return dataToSend
+            })
+            return res.status(200).json({ success: true, message: "Pending payments retrieved", payment: allPayment })
         }
         const payments = await paymentModal.find({}).sort({ createdAt: -11 }).populate("byUser", "name _id profilePic")
-        return res.status(200).json({ message: "Pending payments retrieved", payment: payments })
+        const allPayment = payments.map((payment) => {
+            const dataToSend = {
+                _id: payment._id,
+                userId: payment?.byUser?._id,
+                profilePic: payment?.byUser?.profilePic,
+                upiId: payment?.upiId,
+                amount: payment.amount,
+                name: payment?.byUser?.name,
+                status: payment.status
+            }
+            return dataToSend
+        })
+        return res.status(200).json({ success: true, message: "Pending payments retrieved", payment: allPayment })
     } catch (error) {
         return next(new ApiError("failed to fetch admin activity", 500))
     }
