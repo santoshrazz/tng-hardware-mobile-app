@@ -20,17 +20,17 @@ export async function isAdmin(req, res, next) {
     try {
         const userId = req?.user?.id
         if (!userId) {
-            return next(new ApiError("unauthenticated", 403))
+            return next(new ApiError("unauthenticated", 401))
         }
         const user = await userModel.findById(userId)
         if (!user) {
-            return next(new ApiError("No user found ", 403))
+            return next(new ApiError("No user found ", 401))
         }
         if (user.role === "Admin") {
             next()
         }
         else {
-            return next(new ApiError("Need admin access to get the info", 403))
+            return next(new ApiError("This is admin access resource only", 403))
         }
     } catch (error) {
         return next(new ApiError("unauthenticated", 403))

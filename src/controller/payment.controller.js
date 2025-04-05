@@ -131,7 +131,7 @@ export const getAllPaymentAdmin = async (req, res, next) => {
 
 export async function processPayment(req, res, next) {
     try {
-        const { userId, amount, transetionId, paymentMethod, paymentId } = req.body;
+        const { userId, amount, transectionId, paymentMethod, paymentId } = req.body;
         const reqUserId = req.user.id;
         const currentUser = await userModel.findById(reqUserId);
         if (currentUser.role !== "Admin") {
@@ -144,7 +144,7 @@ export async function processPayment(req, res, next) {
         if (currentPendingPayment.status !== "pending") {
             return next(new ApiError(`Your payment status is already ${currentPendingPayment.status}`))
         }
-        if (currentPendingPayment.amount !== amount || !currentPendingPayment.byUser.equals(userId)) {
+        if (currentPendingPayment.amount !== Number(amount) || !currentPendingPayment.byUser.equals(userId)) {
             return next(new ApiError("Pending amount and receiver amount doesn't match"))
         }
         if (paymentMethod.toLowerCase() === "cash") {
@@ -156,12 +156,13 @@ export async function processPayment(req, res, next) {
         else {
             currentPendingPayment.paymentMethod = "upi"
             currentPendingPayment.status = "approved"
-            currentPendingPayment.transectionId = transetionId;
+            currentPendingPayment.transectionId = transectionId;
             await currentPendingPayment.save()
             return res.status(200).json({ message: "Payment made Successfully with upi", success: true })
         }
 
     } catch (error) {
+        console.log("error", error)
         return next(new ApiError("Error processing payments", 500))
     }
 }

@@ -7,6 +7,6 @@ const paymentRouter = Router();
 paymentRouter.post('/create', verifyUserToken, createPayment)
 paymentRouter.get('/pending-payment', verifyUserToken, getPendingPayments)
 paymentRouter.get('/all-payments', verifyUserToken, isAdmin, getAllPaymentAdmin)
-paymentRouter.get('/process-payment', verifyUserToken, isAdmin, processPayment)
+paymentRouter.post('/process-payment', verifyUserToken, isAdmin, processPayment)
 
 export default paymentRouter
