@@ -88,7 +88,7 @@ export const getAllPaymentAdmin = async (req, res, next) => {
                     amount: payment.amount,
                     name: payment?.byUser?.name,
                     status: payment.status,
-                    transectionId: payment.transectionId || ""
+                    transactionId: payment.transactionId || ""
                 }
                 return dataToSend
             })
@@ -131,7 +131,7 @@ export const getAllPaymentAdmin = async (req, res, next) => {
 
 export async function processPayment(req, res, next) {
     try {
-        const { userId, amount, transectionId, paymentMethod, paymentId } = req.body;
+        const { userId, amount, transactionId, paymentMethod, paymentId } = req.body;
         const reqUserId = req.user.id;
         const currentUser = await userModel.findById(reqUserId);
         if (currentUser.role !== "Admin") {
@@ -156,7 +156,7 @@ export async function processPayment(req, res, next) {
         else {
             currentPendingPayment.paymentMethod = "upi"
             currentPendingPayment.status = "approved"
-            currentPendingPayment.transectionId = transectionId;
+            currentPendingPayment.transactionId = transactionId;
             await currentPendingPayment.save()
             return res.status(200).json({ message: "Payment made Successfully with upi", success: true })
         }

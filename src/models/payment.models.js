@@ -12,7 +12,7 @@ const paymentSchema = new Schema({
         type: String,
         enum: ["pending", "rejected", "approved"]
     },
-    transectionId: {
+    transactionId: {
         type: String,
         trim: true
     },
