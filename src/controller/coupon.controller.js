@@ -4,6 +4,7 @@ import { userModel } from "../models/user.models.js";
 import mongoose from "mongoose";
 import { generateCouponCode } from "../utils/index.js";
 import { activityModal } from "../models/activity.models.js";
+import { paymentModal } from "../models/payment.models.js";
 
 // ===========>   User only Controller   <================
 export const handleCreateCoupon = async (req, res, next) => {
@@ -127,7 +128,13 @@ export const getRedeemedByUserCouponList = async (req, res, next) => {
         if (coupons.length <= 0) {
             return res.status(200).json({ success: true, message: "No redeemed coupons yet", userDetails: dataToSend, coupons });
         }
-        return res.status(200).json({ success: true, userDetails: dataToSend, message: "coupons retrieved successfully", coupons });
+        const paymentsWithdrawn = await paymentModal.find({
+            $and: [
+                { status: "approved" },
+                { byUser: userId }
+            ]
+        })
+        return res.status(200).json({ success: true, userDetails: dataToSend, message: "coupons retrieved successfully", coupons, paymentsWithdrawn });
     } catch (error) {
         return next(new ApiError("error fetching redeemed coupons", 500))
     }
