@@ -134,7 +134,13 @@ export const getRedeemedByUserCouponList = async (req, res, next) => {
                 { byUser: userId }
             ]
         })
-        return res.status(200).json({ success: true, userDetails: dataToSend, message: "coupons retrieved successfully", coupons, paymentsWithdrawn });
+        const rejectedPayment = await paymentModal.find({
+            $and: [
+                { status: "rejected" },
+                { byUser: userId }
+            ]
+        })
+        return res.status(200).json({ success: true, userDetails: dataToSend, message: "coupons retrieved successfully", coupons, paymentsWithdrawn, rejectedPayment });
     } catch (error) {
         return next(new ApiError("error fetching redeemed coupons", 500))
     }

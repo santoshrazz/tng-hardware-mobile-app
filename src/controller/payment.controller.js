@@ -43,16 +43,13 @@ export const createPayment = async (req, res, next) => {
 export const getPendingPayments = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const currentUser = await userModel.findById(userId)
-        if (currentUser.role === "Admin") {
-            const pendingPayments = await paymentModal.find({ status: "pending" }).populate("byUser", "name _id profilePic")
-            return res.status(200).json({ success: true, message: "Retrieved pending payments for Admin", payments: pendingPayments })
-        }
-        else if (currentUser.role === "User") {
-            const pendingPayments = await paymentModal.find({ byUser: userId })
-            return res.status(200).json({ success: true, message: "Retrieved pending payments for user", payments: pendingPayments })
-        }
-        return next(new ApiError("No Pending Activity Found", 400))
+        const pendingPayments = await paymentModal.find({
+            $and: [
+                { byUser: userId },
+                { status: "pending" }
+            ]
+        })
+        return res.status(200).json({ success: true, message: "Retrieved pending payments for user", payments: pendingPayments })
     } catch (error) {
         return next(new ApiError("Error while getting pending payments", 500))
     }
@@ -119,7 +116,8 @@ export const getAllPaymentAdmin = async (req, res, next) => {
                 upiId: payment?.upiId,
                 amount: payment.amount,
                 name: payment?.byUser?.name,
-                status: payment.status
+                status: payment.status,
+                transactionId: payment.transactionId || ""
             }
             return dataToSend
         })
@@ -163,6 +161,23 @@ export async function processPayment(req, res, next) {
 
     } catch (error) {
         console.log("error", error)
+        return next(new ApiError("Error processing payments", 500))
+    }
+}
+export async function rejectPayment(req, res, next) {
+    try {
+        const { paymentId } = req.body;
+        const currentPendingPayment = await paymentModal.findById(paymentId);
+        if (!currentPendingPayment) {
+            return next(new ApiError("No Payment found with the payment id"))
+        }
+        if (currentPendingPayment.status !== "pending") {
+            return next(new ApiError(`Your payment status is already ${currentPendingPayment.status}`))
+        }
+        currentPendingPayment.status = "rejected"
+        await currentPendingPayment.save()
+        return res.status(200).json({ message: "Payment rejected successfully", success: true })
+    } catch (error) {
         return next(new ApiError("Error processing payments", 500))
     }
 }
