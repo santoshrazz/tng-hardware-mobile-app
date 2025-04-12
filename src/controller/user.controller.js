@@ -238,9 +238,25 @@ export const userDetails = async (request, response, next) => {
             return next(new ApiError("No user id found", 401))
         }
         const user = await userModel.findById(userId).select("-noOfCouponRedeem")
+        if (!user) {
+            return next(new ApiError("No user found", 400))
+        }
         const allRedeemdCoupons = await couponModel.find({ usedByUser: user._id })
-        response.status(200).json({ success: true, message: "Retrived user details successfully", user, coupons: allRedeemdCoupons })
+        const paymentsWithdrawn = await paymentModal.find({
+            $and: [
+                { status: "approved" },
+                { byUser: user._id }
+            ]
+        })
+        const rejectedPayment = await paymentModal.find({
+            $and: [
+                { status: "rejected" },
+                { byUser: user._id }
+            ]
+        })
+        response.status(200).json({ success: true, message: "Retrived user details successfully", user, coupons: allRedeemdCoupons, paymentsWithdrawn, rejectedPayment })
     } catch (error) {
+        console.log("error", error)
         return next(new ApiError("Error getting user detail"));
     }
 }
