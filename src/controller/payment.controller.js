@@ -147,7 +147,7 @@ export async function processPayment(req, res, next) {
         }
         if (paymentMethod.toLowerCase() === "cash") {
             currentPendingPayment.paymentMethod = "cash"
-            currentPendingPayment.status = "completed"
+            currentPendingPayment.status = "approved"
             await currentPendingPayment.save()
             return res.status(200).json({ message: "Payment made Successfully with cash", success: true })
         }
